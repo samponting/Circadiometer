@@ -36,8 +36,11 @@ ax.LineWidth = 1.6;
 xticks(datetime('18-Jan-2023 00:00','Format','dd/MM HH:mm'):caldays(1):datetime('24-Jan-2023 00:00','Format','MM/dd HH:mm'))
 xtickformat('dd/MM')
 xlim([datetime('18-Jan-2023 00:00') datetime('25-Jan-2023 00:00')])
+% for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
+%     patch('XData',[i i+hours(12) i+hours(12) i],'YData',[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+% end
 for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
-    patch([i i+hours(12) i+hours(12) i],[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+    fill([i i+hours(12) i+hours(12) i],[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
 end
 ylim([0 0.5])
 legend('S cone','M cone','L cone','Rod','ipRGC')
@@ -47,6 +50,10 @@ xlabel('Time')
 fig.Position = [0 0 1500 1000];
 title('Mean Radiance over Time')
 ax.Children = flip(ax.Children);
+
+if saveFig
+    saveas(fig,'MeanRadianceOverTime.png')
+end
 
 %% Radiance Maps
 
@@ -159,11 +166,11 @@ ax = gca;
 ax.FontSize = 16;
 ax.FontName = 'Ariel';
 ax.LineWidth = 1.6;
-xticks(datetime('18-Jan-2023 00:00','Format','dd/MM HH:mm'):hours(1):datetime('24-Jan-2023 00:00','Format','MM/dd HH:mm'))
+xticks(datetime('18-Jan-2023 00:00','Format','dd/MM HH:mm'):hours(2):datetime('24-Jan-2023 00:00','Format','MM/dd HH:mm'))
 xtickformat('HH:mm')
-xlim([datetime('18-Jan-2023 00:00') datetime('19-Jan-2023 00:00')])
+xlim([datetime('18-Jan-2023 00:00') datetime('18-Jan-2023 22:00')])
 for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('29-Jan-2023 12:00')
-    patch([i i+hours(12) i+hours(12) i],[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+    fill([i i+hours(12) i+hours(12) i],[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
 end
 ylim([0 0.5])
 legend('S cone','M cone','L cone','Rod','ipRGC')
