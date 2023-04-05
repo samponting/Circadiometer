@@ -3,7 +3,7 @@
 clear
 receptorClasses = ['S','M','L','R','I'];
 
-for receptorClass = 5
+receptorClass = 5;
     files = dir('*.mat');
     downscale = 1/4;
     % sample = zeros([3388*2712*downscale.^2,length(files)]);
@@ -33,8 +33,21 @@ for receptorClass = 5
     sample2 = log(sample2);
 %     sample = real(sample);
 
+
+%% Explained Graphs
+    [coefs,score,latent,tsquared,explained] = pca(sample);
+
+    bar(explained(1:10),'FaceColor',[0.3 0 1]);
+    ylabel('% Variance Explained')
+    xlabel('Principal Component Number')
+    title('Variance Explained by Principle Components (Log)')
+    ax = gca;
+%     ax.FontSize = 16;
+    ax.FontName = 'Ariel';
+%     ax.LineWidth = 1.6;
+    ylim([0 100])
+
     %% Spatial PCA
-    
     [coefs,score,latent,tsquared,explained] = pca(sample2);
     
     fig=figure();
@@ -46,7 +59,7 @@ for receptorClass = 5
     xlabel('Component Number')
     ylabel('Variance Explained')
     xlim([0 50])
-    saveas(fig,'logPCAvar.png')
+%     saveas(fig,'logPCAvar.png')
     numComp = 0;
     for c = 1:length(explained)
         if explained(c) >= 5
@@ -65,9 +78,11 @@ for receptorClass = 5
         colormap(gca,colorcet('L3'))
         colorbar
         caxis([min(coefs(:,1:numComp),[],'all') max(coefs(:,1:numComp),[],'all')])
-        title(sprintf('%s PC%d Weightings (Variance Explained: %s)',receptorClasses(receptorClass),z,num2str(round(explained(z)))))
+%         title(sprintf('%s PC%d Weightings (Variance Explained: %s)',receptorClasses(receptorClass),z,num2str(round(explained(z)))))
+        title(sprintf('Principal Component %s Weightings (Log)',num2str(z)))
+
         ax = gca;
-        ax.FontSize = 8;
+        ax.FontSize = 16;
         ax.FontName = 'Ariel';
         if saveFig
             saveas(gca,[pwd,'/',sprintf('%s_logPC%dweightings.png',receptorClasses(receptorClass),z)])
@@ -91,7 +106,7 @@ for receptorClass = 5
     xtickformat('dd/MM')
     xlim([datetime('18-Jan-2023 00:00') datetime('25-Jan-2023 00:00')])
     for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
-        patch([i i+hours(12) i+hours(12) i],[min(scores(:,1:numComp),[],'all')-50 min(scores(:,1:numComp),[],'all')-50 max(scores(:,1:numComp),[],'all')+50 max(scores(:,1:numComp),[],'all')+50],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+        fill([i i+hours(12) i+hours(12) i],[min(scores(:,1:numComp),[],'all')-50 min(scores(:,1:numComp),[],'all')-50 max(scores(:,1:numComp),[],'all')+50 max(scores(:,1:numComp),[],'all')+50],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
     end
     ylim([min(scores(:,1:numComp),[],'all')-50 max(scores(:,1:numComp),[],'all')+50])
     legend('PC1','PC2')
@@ -99,7 +114,8 @@ for receptorClass = 5
     ylabel('PCA score')
     xlabel('Time')
     fig.Position = [0 0 1500 1000];
-    title(sprintf('%s PC Score over Time',receptorClasses(receptorClass)))
+%     title(sprintf('%s PC Score over Time',receptorClasses(receptorClass)))
+    title('Principal Component Score Over Time')
     ax.Children = flip(ax.Children);
     if saveFig
         saveas(gca,[pwd,'/',sprintf('%s_logPCscoresOverTime.png',receptorClasses(receptorClass))])
@@ -207,7 +223,7 @@ for receptorClass = 5
     %         patch([i i+hours(12) i+hours(12) i],[min(score(:,1:numComp),[],'all')-50 min(score(:,1:numComp),[],'all')-50 max(score(:,1:numComp),[],'all')+50 max(score(:,1:numComp),[],'all')+50],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
     %     end
         for j = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
-            patch([j j+hours(12) j+hours(12) j],[min(score2(:,1:numComp),[],'all')-50 min(score2(:,1:numComp),[],'all')-50 max(score2(:,1:numComp),[],'all')+50 max(score2(:,1:numComp),[],'all')+50],clustCol(z,:),'FaceAlpha',0.5,'LineStyle','none')
+            fill([j j+hours(12) j+hours(12) j],[min(score2(:,1:numComp),[],'all')-50 min(score2(:,1:numComp),[],'all')-50 max(score2(:,1:numComp),[],'all')+50 max(score2(:,1:numComp),[],'all')+50],clustCol(z,:),'FaceAlpha',0.5,'LineStyle','none')
         end
         ylim([min(score2(:,1:numComp),[],'all')-50 max(score2(:,1:numComp),[],'all')+50])
         legend('PC1','PC2')
@@ -218,8 +234,8 @@ for receptorClass = 5
         title(sprintf('%s PC Score over Time: Cluster %d',receptorClasses(receptorClass),z))
         ax.Children = flip(ax.Children);
         if saveFig
-            saveas(gca,[pwd,'/test/',sprintf('%s_logPCscoresOverTimeCluster%d.png',receptorClasses(receptorClass),z)])
+            saveas(gca,[pwd,'/',sprintf('%s_logPCscoresOverTimeCluster%d.png',receptorClasses(receptorClass),z)])
         end
     end
     close all
-end
+

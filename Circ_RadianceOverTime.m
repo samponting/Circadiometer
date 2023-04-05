@@ -21,7 +21,7 @@ timestamp = datetime(times,'InputFormat','yyyy_MM_dd_HH_mm');
 newtimes = string(datetime(timestamp,'Format','MM/dd/uuuu HH:mm')');
 
 colors = [0.15,0.15,0.85;0.15,0.85,0.15;0.85,0.15,0.15;0.15,0.15,0.15;0.15,0.85,0.85];
-
+%%
 fig = figure();
 for z= 1:5
     ts = timeseries(means(:,z),newtimes);
@@ -45,10 +45,10 @@ end
 ylim([0 0.5])
 legend('S cone','M cone','L cone','Rod','ipRGC')
 %     ax.XTickLabel = ax.XTickLabel;
-ylabel('Radiance')
+ylabel('Irradiance')
 xlabel('Time')
 fig.Position = [0 0 1500 1000];
-title('Mean Radiance over Time')
+title('Mean Irradiance over Time')
 ax.Children = flip(ax.Children);
 
 if saveFig
@@ -179,9 +179,81 @@ ylim([0 0.2])
 ylabel('Standard Error')
 xlabel('Time')
 fig.Position = [0 0 1500 1000];
-title('Variation of Radiance Throughout The Day')
+title('Variability of Irradiance Across Days')
 ax.Children = flip(ax.Children);
 saveas(fig,[pwd,'/VariationThroughoutTheDay.png'])
+
+
+%% Irradiance Throughout The Day Per Region
+
+files = dir('*.mat');
+receptorClasses = ['S','M','L','R','I'];
+load([pwd,'/other/clusterMap.mat'])
+greyClustImg = greyClustImg.*3;
+downscale = 1/4;
+means = zeros(length(files),5);
+stds = zeros(length(files),5);
+timestamp = datetime(times,'InputFormat','yyyy_MM_dd_HH_mm');
+newtimes = string(datetime(timestamp,'Format','MM/dd/uuuu HH:mm')');
+
+
+saveFig = true;
+for i = 1:length(files)
+    disp(['processing image ',num2str(i)])
+    load(files(i).name)
+    imgResize = imresize(img, downscale);
+    imgReshape = reshape(imgResize,[size(imgResize,1)*size(imgResize,2),5]);
+
+    for z = 1:3
+        filter = greyClustImg == z;
+        filterReshape = reshape(filter, [size(filter,1)*size(filter,2),1]);
+        test = imgReshape.*filterReshape;
+        for y = 1:5
+            means(i,y,z) = mean(test(find(test(:,y)>0),y),1);
+            stds(i,y,z) = std(test(find(test(:,y)>0),y))/sqrt(size(test,1));
+        end
+    end
+    times{i} = files(i).name(1:end-4);
+end
+%%
+colors = [0.15,0.15,0.85;0.15,0.85,0.15;0.85,0.15,0.15;0.15,0.15,0.15;0.15,0.85,0.85];
+
+for cluster = 1:3
+    fig = figure();
+    for z= 1:5
+        ts = timeseries(means(:,z,cluster),newtimes);
+        p = plot(ts);hold on
+        p.LineWidth = 2;
+        p.Color = colors(z,:);
+    end
+    ax = gca;
+    ax.FontSize = 16;
+    ax.FontName = 'Ariel';
+    ax.LineWidth = 1.6;
+    xticks(datetime('18-Jan-2023 00:00','Format','dd/MM HH:mm'):caldays(1):datetime('24-Jan-2023 00:00','Format','MM/dd HH:mm'))
+    xtickformat('dd/MM')
+    xlim([datetime('18-Jan-2023 00:00') datetime('25-Jan-2023 00:00')])
+    % for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
+    %     patch('XData',[i i+hours(12) i+hours(12) i],'YData',[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+    % end
+    for i = datetime('18-Jan-2023 12:00'):caldays(1):datetime('24-Jan-2023 12:00')
+        fill([i i+hours(12) i+hours(12) i],[0 0 0.5 0.5],[0.8 0.8 0.8],'FaceAlpha',0.5,'LineStyle','none')
+    end
+%     ylim([0 0.5])
+    legend('S cone','M cone','L cone','Rod','ipRGC')
+    %     ax.XTickLabel = ax.XTickLabel;
+    ylabel('Irradiance')
+    xlabel('Time')
+    fig.Position = [0 0 1500 1000];
+    title('Mean Irradiance over Time')
+    ax.Children = flip(ax.Children);
+end
+
+
+
+
+
+
 
 
 
